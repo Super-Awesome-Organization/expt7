@@ -29,12 +29,63 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 #include <asf.h>
+#include <stdio.h>
+#include <avr/io.h>
+#include <util/delay.h>
+
+
+#define FPGA_0 PORTD0
+#define FPGA_1 PORTD1
+#define FPGA_2 PORTD2
+#define FPGA_3 PORTD3
+#define FPGA_4 PORTD4
+#define FPGA_5 PORTD5
+#define FPGA_6 PORTD6
+#define FPGA_7 PORTD7
+#define FPGA_BUS PORTD
+
+
 
 int main (void)
 {
 	/* Insert system clock initialization code here (sysclk_init()). */
-
+	
 	board_init();
+	//Allocate ram to read from
+
+	//Set Input/Output settings for ports
+	DDRC = 0b10000000;
+	DDRD = 0xff;
+
+
+
+	 char buffer [64];
+	 PORTC = 0x0;
+
+
+	 for (int i = 0; i<64; i++){
+		
+		PORTC = 0b10000000;
+		FPGA_BUS = buffer[i];
+		_delay_ms(250);
+		PORTC = 0x0;
+		_delay_ms(250);
+		 
+		 
+	 }
+
+	 while (1){
+	}
+
+
+
+
+	
+	
+	
+	
 
 	/* Insert application code here, after the board has been initialized. */
+	
+	
 }
