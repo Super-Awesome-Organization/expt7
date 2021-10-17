@@ -58,31 +58,36 @@ int main (void)
 	DDRD = 0xff;
 
 
-	//Create a Buffer without allocated values
-	 char buffer [64];
-	//Set clock to 0
-	 PORTC = 0x0;
 
-	//Loop through all values of buffer
+	 char buffer [64];
+	 PORTC = 0x0;
+	 int x = 0;
+	 
+		while (1){
 	 for (int i = 0; i<64; i++){
-		//Set clock to rising edge
-		PORTC = 0b10000000;
-		//Push buffer value
-		FPGA_BUS = buffer[i];
-		// Wait 250 ms
-		_delay_ms(250);
-		//Set clock to falling edge
-		PORTC = 0x0;
-		//Wait 250 ms
-		_delay_ms(250);
+		 x = &buffer[i];
+		 PORTC = 0b10000000;
+		 FPGA_BUS =  x >> 8 ;
+		 _delay_ms(250);
+		 PORTC = 0x0;
+		 FPGA_BUS = x && 0xFF;
+		 _delay_ms(250);
 		 
 		 
 	 }
 
-	 while (1){
-		//Ending infinite loop
+	 
 	}
 
+
+
+
+	
+	
+	
+	
+
+	/* Insert application code here, after the board has been initialized. */
 	
 	
 }
