@@ -1,11 +1,14 @@
-module countertrl(clk,roen,counteren);
+module countertrl(clk,roen,counteren,counter_ctrl_state);
 input clk,roen;
 output counteren;
+output reg [1:0] counter_ctrl_state;
 
 
 reg [1:0] state;
 reg  counteren;
 reg [31:0] cout;
+
+assign
 
 always@(state)
   case (state)
@@ -24,5 +27,7 @@ always @(posedge clk)
   2'b11: begin if(roen==0) state<=2'b00; end    
   default: begin state<=2'b00; cout<=32'd0; end
   endcase
+
+  counter_ctrl_state <= state;
   
 endmodule	
