@@ -16,6 +16,7 @@ module part2_top(clk,rst);
 	wire 	[31:0] 	count0, count1;
 	wire 			comp_out;
 	wire 			shift_reg_en, shiftreg_out;
+	wire 			ram_wren;
 	
 	wire 	[7:0] chall;
 	assign chall = 8'h69;
@@ -59,8 +60,18 @@ module part2_top(clk,rst);
 		.rst(rst),
 		.counter_ctrl_state(counter_ctrl_state),
 		.shift_reg_en(shift_reg_en),
+		.ram_wren(ram_wren),
 		.roen(roen)
 	);
+
+	ram0 ram0 (
+		.address ( 5'h00 ),
+		.clock ( clk ),
+		.data ( shiftreg_out ),
+		.wren ( ram_wren ),
+		.q (  )
+	);
+
 
 endmodule
 
