@@ -4,5 +4,7 @@
 
 src\ASF\common\boards\user_board\init.c
 
+src\getSRAM.s
+
 src\main.c
 

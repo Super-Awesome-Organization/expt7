@@ -54,7 +54,8 @@ C_SRCS +=  \
 ../src/main.c
 
 
-PREPROCESSING_SRCS += 
+PREPROCESSING_SRCS +=  \
+../src/getSRAM.s
 
 
 ASM_SRCS += 
@@ -62,18 +63,22 @@ ASM_SRCS +=
 
 OBJS +=  \
 src/ASF/common/boards/user_board/init.o \
+src/getSRAM.o \
 src/main.o
 
 OBJS_AS_ARGS +=  \
 src/ASF/common/boards/user_board/init.o \
+src/getSRAM.o \
 src/main.o
 
 C_DEPS +=  \
 src/ASF/common/boards/user_board/init.d \
+src/getSRAM.d \
 src/main.d
 
 C_DEPS_AS_ARGS +=  \
 src/ASF/common/boards/user_board/init.d \
+src/getSRAM.d \
 src/main.d
 
 OUTPUT_FILE_PATH +=lab7_part1.elf
@@ -112,6 +117,13 @@ src/main.o: ../src/main.c
 
 
 # AVR32/GNU Assembler
+src/getSRAM.o: ../src/getSRAM.s
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU Assembler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -Wa,-gdwarf2 -x assembler-with-cpp -c -mmcu=atmega16u4 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega16u4" -mrelax -DBOARD=USER_BOARD -I "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include" -I "../src/ASF/common/boards/user_board" -I "../src/ASF/common/boards" -I "../src/ASF/mega/utils/preprocessor" -I "../src/ASF/mega/utils" -I "../src/ASF/common/utils" -I "../src" -I "../src/config"  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -Wa,-g   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 
 
 

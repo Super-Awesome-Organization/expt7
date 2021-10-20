@@ -33,6 +33,10 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#define SRAM_START_ADDR 0x100
+#define SRAM_END_ADDR 0x05FF
+#define OFFSET 0
+#define NUM_ADDR 64
 
 #define FPGA_0 PORTD0
 #define FPGA_1 PORTD1
@@ -44,31 +48,28 @@
 #define FPGA_7 PORTD7
 #define FPGA_BUS PORTD
 
+void init();
+extern unsigned char getSRAM (unsigned short address);
+
+//variables to communicate with SRAM.s
+unsigned short address = 0;
+unsigned char SRAMVal = 0;
+unsigned short SRAMValAddr = &SRAMVal;
 
 
 int main (void)
 {
-	/* Insert system clock initialization code here (sysclk_init()). */
-	
-	board_init();
-	//Allocate ram to read from
+	init();
 
-	//Set Input/Output settings for ports
-	DDRC = 0b10000000;
-	DDRD = 0xff;
-
-
-	//Create a Buffer without allocated values
-	 char buffer [64];
-	//Set clock to 0
-	 PORTC = 0x0;
-
-	//Loop through all values of buffer
-	 for (int i = 0; i<64; i++){
+	//Loop through all values of specified range
+	 for (int i = SRAM_START_ADDR + OFFSET; i<SRAM_START_ADDR + NUM_ADDR + OFFSET; i++){
 		//Set clock to rising edge
 		PORTC = 0b10000000;
-		//Push buffer value
-		FPGA_BUS = buffer[i];
+		//Puts value into SRAMVal
+		//truncate I to address
+		address = (short)i;
+		SRAMVal = getSRAM(address);
+		FPGA_BUS = SRAMVal;
 		// Wait 250 ms
 		_delay_ms(250);
 		//Set clock to falling edge
@@ -84,5 +85,21 @@ int main (void)
 	}
 
 	
+	
+}
+
+void init()
+{
+		//link with getSRAM.s
+
+		board_init();
+
+		//Set Input/Output settings for ports
+		DDRC = 0b10000000;
+		DDRD = 0xff;
+		
+		//Set clock to 0
+		PORTC = 0x0;
+
 	
 }
