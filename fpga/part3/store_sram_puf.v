@@ -1,12 +1,12 @@
 // Group 2: Raj Patel, Zachary Rouviere, Evan Waxman
-// Experiement 7 Part 1
+// Experiement 7 Part 3
 // 10/24/21
 
 // Description:
-//	This module takes the SRAM bytes data from the microprocesser
+//	This module takes a SRAM byte data from the microprocesser
 // and stores it into a ram enity, so that the values can be seen 
-// in the in system content memory editor window. A total of 64 bytes are 
-// transfered to the FPGA
+// in the in system content memory editor window. A total of 1 byte is 
+// transfered to the FPGA for the SRAM TRNG
 
 `timescale 1ns/1ns
 
