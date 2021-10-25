@@ -1,12 +1,13 @@
 `timescale 1ns/1ns
 
 module  ro_puf_ctrl (
-	input			clk,
-	input 			rst,
-	input 	[1:0]	counter_ctrl_state,
-	output	reg		shift_reg_en,
-	output 	reg 	ram_wren,
-	output 	reg		roen
+	input				clk,
+	input 				rst,
+	input 		[1:0]	counter_ctrl_state,
+	output	reg			shift_reg_en,
+	output 	reg 		ram_wren,
+	output 	reg			roen,
+	output 	reg [7:0] 	challenge_cnt
 );
 
 parameter 	STATE0  = 2'b10, 
@@ -16,24 +17,28 @@ parameter 	STATE0  = 2'b10,
 reg		[1:0]	state, next_state;
 reg				roen_next;
 reg 			shift_reg_en_next;
-reg		[6:0]	signature_bit_count;
-reg				signature_bit_count_en;
 reg 			ram_wren_next;
+reg 			challenge_cnt_en;
+
 
 always @(posedge clk) begin
 	if(rst) begin
 		roen <= #1 1'b0;
 		ram_wren <= #1 1'b0;
 		shift_reg_en <= #1 1'b0;
-		signature_bit_count <= #1 7'h00;
+		challenge_cnt <= #1 7'h00;
+
 		state <= #1 STATE0;
 	end else begin
 		roen <= #1 roen_next;
 		ram_wren <= #1 ram_wren_next;
 		shift_reg_en <= #1 shift_reg_en_next;
-		if (signature_bit_count_en == 1'b1) begin
-			signature_bit_count <= #1 signature_bit_count + 1'b1;
+
+		// challenge counter
+		if (challenge_cnt_en == 1'b1) begin
+			challenge_cnt <= #1 challenge_cnt + 1'b1;
 		end
+
 		state <= #1 next_state;
 	end
 end
@@ -43,45 +48,49 @@ always @(*) begin
 	roen_next = roen;
 	ram_wren_next = ram_wren;
 	shift_reg_en_next = shift_reg_en;
-	signature_bit_count_en = 1'b0;
+	challenge_cnt_en = 1'b0;
 	next_state = state;
 
 	case (state)
+		// initial state: disable ro enable, shift reg en, and ram wr en
 		STATE0: begin
 			roen_next = 1'b0;
 			ram_wren_next = 1'b0;
 			shift_reg_en_next = 1'b0;
 
-			if (&signature_bit_count == 1'b1) begin
+			if (challenge_cnt == 8'd127) begin	// write signature to sram
 				ram_wren_next = 1'b1;
 				next_state = STATE2;
-			end else begin
+			end else begin 						// get next signature bit from new ro pair
 				next_state = STATE1;
 			end
 		end
 
+		// enable ro pair state: enable ro enable until counter controller reaches final state
 		STATE1: begin
 			roen_next = 1'b1;
 			ram_wren_next = 1'b0;
 
-			if (counter_ctrl_state == 2'b11) begin
+			if (counter_ctrl_state == 2'b11) begin 	// shift new signature bit into shift reg, increment challenge counter
 				shift_reg_en_next = 1'b1;
-				signature_bit_count_en = 1'b1;
+				challenge_cnt_en = 1'b1;
 				next_state = STATE0;
 			end
 		end
 
+		// done state, 127 bit signature acquired, ro's disabled until power/rst cycle
 		STATE2: begin
 			roen_next = 1'b0;
 			ram_wren_next = 1'b0;
 			shift_reg_en_next = 1'b0;
 		end
 
+		// default state: default all comb. signals to 0
 		default: begin
 			roen_next = 1'b0;
 			ram_wren_next = 1'b0;
 			shift_reg_en_next = 1'b0;
-			signature_bit_count_en = 1'b0;
+			challenge_cnt_en = 1'b0;
 			next_state = STATE0;
 		end
 	endcase

@@ -7,10 +7,10 @@ module  comparator #(parameter	BUS_WIDTH = 256) (
 );	
 
 always @(*) begin
-	if (din0 > din1) begin
-		dout = 1'b0;
-	end else begin
+	if (din0 < din1) begin
 		dout = 1'b1;
+	end else begin
+		dout = 1'b0;
 	end
 end
 

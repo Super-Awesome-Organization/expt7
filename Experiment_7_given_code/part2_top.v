@@ -3,7 +3,14 @@
 // 10/24/21
 
 // Description:
-//	
+//	This top level entity generates a conventional RO-PUF based on Figure 2 of the Experiment 7
+//	documentation. A pair of 128 RO-PUFs are generated and connected to two 128-1 muxes, where
+//	the mux select for each mux is controlled by the 7 bit challenge bus as it increments from
+//	0 to 127. During each challenge, the toggle rate of each RO is counted for a set interval defined
+//	by the counterctrl module and then those count values are compared by the comparator module.
+//	A 0 or 1 bit value is outputted by the comparator depending on which RO is faster. This bit
+//	is then shifted into a shift register and the process repeats until 128 bits are gathered,
+//	creating a 128-bit signature unique to the board.
 
 module part2_top(clk,rst);
 	input clk,rst;
@@ -17,13 +24,11 @@ module part2_top(clk,rst);
 	wire 			comp_out;
 	wire 			shift_reg_en, shiftreg_out;
 	wire 			ram_wren;
+	wire 	[7:0]	challenge;
+
+	parameter ro_no = 256 ; // number of RO pairs for signature generation
 	
-	wire 	[7:0] chall;
-	assign chall = 8'h69;
-
-	parameter ro_no = 256 ; // stage of ROs
 	genvar i ;
-
 	generate
 		
 			for (i=0 ; i< ro_no ; i=i+1 ) 	
@@ -33,9 +38,8 @@ module part2_top(clk,rst);
 			end
 	endgenerate
 
-
-	PUFmux256 mux0(ROUTS0[255:0], chall, muxout0); //chall0
-	PUFmux256 mux1(ROUTS1[255:0], chall, muxout1); //chall1
+	PUFmux256 mux0(ROUTS0[ro_no-1:0], challenge[6:0], muxout0);
+	PUFmux256 mux1(ROUTS1[ro_no-1:0], challenge[6:0], muxout1);
 
 	counterctrl cntctrl(clk,roen,cnten,counter_ctrl_state); 
 	
@@ -50,6 +54,7 @@ module part2_top(clk,rst);
 
 	shiftreg shiftreg (
 		.clk(clk),
+		.rst(rst),
 		.in(comp_out),
 		.en(shift_reg_en),
 		.outs(shiftreg_out)
@@ -61,7 +66,8 @@ module part2_top(clk,rst);
 		.counter_ctrl_state(counter_ctrl_state),
 		.shift_reg_en(shift_reg_en),
 		.ram_wren(ram_wren),
-		.roen(roen)
+		.roen(roen),
+		.challenge_cnt(challenge)
 	);
 
 	ram0 ram0 (

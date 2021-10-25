@@ -1,23 +1,16 @@
-module shiftreg (clk,in,en,outs);
+module shiftreg (clk,rst,in,en,outs);
 
-    input clk,in,en;
-    output [127:0] outs;
-
-    reg [127:0] tempreg;
-    initial tempreg = 128'b0;
-    wire [127:0] tempwire;
+    input clk,rst,in,en;
+    output reg [127:0] outs;
 
     always @(posedge clk) begin
-        if (en == 1'b1) begin
-
-            tempreg <= tempreg << 1;
-            tempreg[0]	<= in;		
-
+        if (rst) begin
+            outs <= 127'd0;
         end else begin
-            tempreg<=tempreg;
+            if (en == 1'b1) begin
+                outs <= outs << 1;
+                outs[0]	<= in;
+            end
         end
     end
-
-    assign tempwire = tempreg;
-    assign outs = tempwire;
 endmodule
