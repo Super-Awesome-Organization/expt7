@@ -7,18 +7,18 @@ module  ro_puf_ctrl (
 	output	reg			shift_reg_en,
 	output 	reg 		ram_wren,
 	output 	reg			roen,
-	output 	reg [7:0] 	challenge_cnt
+	output 	reg [7:0] 	challenge
 );
 
-parameter 	STATE0  = 2'b10, 
+parameter 	STATE0  = 2'b00, 
 			STATE1	= 2'b01, 
-			STATE2 	= 2'b11;
+			STATE2 	= 2'b10;
 
 reg		[1:0]	state, next_state;
 reg				roen_next;
 reg 			shift_reg_en_next;
 reg 			ram_wren_next;
-reg 			challenge_cnt_en;
+reg 			challenge_en;
 
 
 always @(posedge clk) begin
@@ -26,7 +26,7 @@ always @(posedge clk) begin
 		roen <= #1 1'b0;
 		ram_wren <= #1 1'b0;
 		shift_reg_en <= #1 1'b0;
-		challenge_cnt <= #1 7'h00;
+		challenge <= #1 8'h00;
 
 		state <= #1 STATE0;
 	end else begin
@@ -35,8 +35,8 @@ always @(posedge clk) begin
 		shift_reg_en <= #1 shift_reg_en_next;
 
 		// challenge counter
-		if (challenge_cnt_en == 1'b1) begin
-			challenge_cnt <= #1 challenge_cnt + 1'b1;
+		if (challenge_en == 1'b1) begin
+			challenge <= #1 challenge + 1;
 		end
 
 		state <= #1 next_state;
@@ -48,7 +48,7 @@ always @(*) begin
 	roen_next = roen;
 	ram_wren_next = ram_wren;
 	shift_reg_en_next = shift_reg_en;
-	challenge_cnt_en = 1'b0;
+	challenge_en = 1'b0;
 	next_state = state;
 
 	case (state)
@@ -58,10 +58,10 @@ always @(*) begin
 			ram_wren_next = 1'b0;
 			shift_reg_en_next = 1'b0;
 
-			if (challenge_cnt == 8'd127) begin	// write signature to sram
+			if (challenge == 8'd128) begin	// write signature to sram
 				ram_wren_next = 1'b1;
 				next_state = STATE2;
-			end else begin 						// get next signature bit from new ro pair
+			end else if (counter_ctrl_state == 2'b00) begin 						// get next signature bit from new ro pair
 				next_state = STATE1;
 			end
 		end
@@ -73,7 +73,7 @@ always @(*) begin
 
 			if (counter_ctrl_state == 2'b11) begin 	// shift new signature bit into shift reg, increment challenge counter
 				shift_reg_en_next = 1'b1;
-				challenge_cnt_en = 1'b1;
+				challenge_en = 1'b1;
 				next_state = STATE0;
 			end
 		end
@@ -90,7 +90,7 @@ always @(*) begin
 			roen_next = 1'b0;
 			ram_wren_next = 1'b0;
 			shift_reg_en_next = 1'b0;
-			challenge_cnt_en = 1'b0;
+			challenge_en = 1'b0;
 			next_state = STATE0;
 		end
 	endcase

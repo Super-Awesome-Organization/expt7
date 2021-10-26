@@ -25,26 +25,27 @@ module part2_top(clk,rst);
 	wire 			shift_reg_en, shiftreg_out;
 	wire 			ram_wren;
 	wire 	[7:0]	challenge;
+	wire 			counterrst;
 
 	parameter ro_no = 256 ; // number of RO pairs for signature generation
 	
 	genvar i ;
 	generate
-		
-			for (i=0 ; i< ro_no ; i=i+1 ) 	
-			begin: ro_block		
-			ro r0( .en(roen), .roout(ROUTS0 [i]) ) ;
-			ro r1( .en(roen), .roout(ROUTS1 [i]) ) ;
-			end
+		for (i=0 ; i< ro_no ; i=i+1 ) 	
+		begin: ro_block		
+			ro r0( .en(1'b1), .roout(ROUTS0[i]) ) ;
+			ro r1( .en(1'b1), .roout(ROUTS1[i]) ) ;
+		end
 	endgenerate
 
-	PUFmux256 mux0(ROUTS0[ro_no-1:0], challenge[6:0], muxout0);
-	PUFmux256 mux1(ROUTS1[ro_no-1:0], challenge[6:0], muxout1);
+	PUFmux256 mux0(ROUTS0[ro_no-1:0], challenge, muxout0);
+	PUFmux256 mux1(ROUTS1[ro_no-1:0], challenge, muxout1);
 
-	counterctrl cntctrl(clk,roen,cnten,counter_ctrl_state); 
+	counterctrl cntctrl(clk,roen,cnten,counterrst,counter_ctrl_state); 
 	
-	counter cnt0(clk,rst,muxout0 & cnten,count0);
-	counter cnt1(clk,rst,muxout1 & cnten,count1);
+	counter cnt0(muxout0,counterrst,cnten,count0);
+	counter cnt1(muxout1,counterrst,cnten,count1);
+
 
 	comparator comp(
 		.din0(count0),
@@ -67,10 +68,10 @@ module part2_top(clk,rst);
 		.shift_reg_en(shift_reg_en),
 		.ram_wren(ram_wren),
 		.roen(roen),
-		.challenge_cnt(challenge)
+		.challenge(challenge)
 	);
 
-	ram0 ram0 (
+	ram ram (
 		.address ( 5'h00 ),
 		.clock ( clk ),
 		.data ( shiftreg_out ),

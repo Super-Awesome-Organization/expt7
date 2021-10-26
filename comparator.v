@@ -1,6 +1,6 @@
 `timescale 1ns/1ns
 
-module  comparator #(parameter	BUS_WIDTH = 256) (
+module  comparator #(parameter	BUS_WIDTH = 32) (
 	input 	[BUS_WIDTH-1:0]	din0,
 	input 	[BUS_WIDTH-1:0]	din1,
 	output	reg				dout
@@ -8,9 +8,9 @@ module  comparator #(parameter	BUS_WIDTH = 256) (
 
 always @(*) begin
 	if (din0 < din1) begin
-		dout = 1'b1;
-	end else begin
 		dout = 1'b0;
+	end else begin
+		dout = 1'b1;
 	end
 end
 

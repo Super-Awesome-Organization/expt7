@@ -8,8 +8,9 @@ module shiftreg (clk,rst,in,en,outs);
             outs <= 127'd0;
         end else begin
             if (en == 1'b1) begin
-                outs <= outs << 1;
-                outs[0]	<= in;
+                outs <= {outs[126:0], in};
+            end else begin
+                outs <= outs;
             end
         end
     end
