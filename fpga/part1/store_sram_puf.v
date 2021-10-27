@@ -11,6 +11,7 @@
 `timescale 1ns/1ns
 
 module  store_sram_puf (
+	input			clk,
 	input			rst,
 	input	[7:0]	uprocessor_din,
 	input			uprocessor_clk
@@ -24,7 +25,7 @@ initial cnt = 1'b0;				// count regiester is initalized to 0
 
 ram1	ram_inst (
 	.address(ram_addr),
-	.clock(uprocessor_clk),
+	.clock(clk),
 	.data(uprocessor_din),
 	.wren(uprocessor_clk),	// data is true on every pos clock edge
 	.q()
